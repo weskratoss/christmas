@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>🎄 Magical Holiday Card 🎁</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: "Comic Sans MS", "Trebuchet MS", cursive;
+    overflow: hidden;
+    background: linear-gradient(#7ec8ff, #eaf6ff);
+  }
+
+  #card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  h1 {
+    text-align: center;
+    color: #c62828;
+    text-shadow: 2px 2px white;
+    margin: 10px 0;
+  }
+
+  /* Snow */
+  .snowflake {
+    position: absolute;
+    top: -10px;
+    color: white;
+    font-size: 14px;
+    pointer-events: none;
+    animation: fall linear infinite;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(110vh);
+    }
+  }
+
+  /* Toolbar */
+  #toolbar {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+  }
+
+  .item {
+    font-size: 32px;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .draggable {
+    position: absolute;
+    cursor: grab;
+  }
+
+  /* Buttons */
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+    background: #ffcc80;
+  }
+
+  /* Photo styling */
+  img.photo {
+    width: 100px;
+    border-radius: 12px;
+    border: 4px solid white;
+  }
+</style>
+</head>
+<body>
+
+<div id="card">
+  <h1>🎅 Happy Holidays! ❄️</h1>
+
+  <!-- Default Decorations -->
+  <div class="draggable" style="left: 50px; top: 200px;">🎄</div>
+  <div class="draggable" style="left: 200px; top: 300px;">⛄</div>
+  <div class="draggable" style="left: 350px; top: 250px;">🎁</div>
+  <div class="draggable" style="left: 600px; top: 280px;">🦌</div>
+  <div class="draggable" style="left: 800px; top: 220px;">⭐</div>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <span class="item">🎄</span>
+    <span class="item">🎁</span>
+    <span class="item">⛄</span>
+    <span class="item">🦌</span>
+    <span class="item">🍭</span>
+    <span class="item">🧦</span>
+    <span class="item">🔔</span>
+    <span class="item">🕯️</span>
+    <button id="soundToggle">🔊</button>
+  </div>
+</div>
+
+<!-- Sounds -->
+<audio id="popSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_5f3b5c2e67.mp3"></audio>
+<audio id="jingleSound" src="https://cdn.pixabay.com/audio/2021/11/30/audio_38e1c3c8f7.mp3" loop></audio>
+
+<script>
+  const card = document.getElementById("card");
+  const popSound = document.getElementById("popSound");
+  const jingleSound = document.getElementById("jingleSound");
+  let soundOn = true;
+
+  // Snow generator
+  function createSnow() {
+    const snow = document.createElement("div");
+    snow.className = "snowflake";
+    snow.innerText = "❄";
+    snow.style.left = Math.random() * window.innerWidth + "px";
+    snow.style.fontSize = Math.random() * 10 + 10 + "px";
+    snow.style.animationDuration = Math.random() * 5 + 5 + "s";
+    card.appendChild(snow);
+
+    setTimeout(() => snow.remove(), 10000);
+  }
+  setInterval(createSnow, 200);
+
+  // Dragging
+  let dragged = null;
+
+  document.addEventListener("mousedown", e => {
+    if (e.target.classList.contains("draggable")) {
+      dragged = e.target;
+    }
+  });
+
+  document.addEventListener("mousemove", e => {
+    if (dragged) {
+      dragged.style.left = e.pageX - 20 + "px";
+      dragged.style.top = e.pageY - 20 + "px";
+    }
+  });
+
+  document.addEventListener("mouseup", () => dragged = null);
+
+  // Toolbar items
+  document.querySelectorAll(".item").forEach(item => {
+    item.addEventListener("click", () => {
+      const newItem = document.createElement("div");
+      newItem.className = "draggable";
+      newItem.innerText = item.innerText;
+      newItem.style.left = "50%";
+      newItem.style.top = "50%";
+      card.appendChild(newItem);
+      if (soundOn) popSound.play();
+    });
+  });
+
+  // Sound toggle
+  document.getElementById("soundToggle").onclick = () => {
+    soundOn = !soundOn;
+    if (soundOn) {
+      jingleSound.play();
+    } else {
+      jingleSound.pause();
+    }
+  };
+
+  jingleSound.volume = 0.4;
+  jingleSound.play();
+
+  // Drag & drop photos
+  card.addEventListener("dragover", e => e.preventDefault());
+  card.addEventListener("drop", e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image")) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = document.createElement("img");
+        img.src = reader.result;
+        img.className = "draggable photo";
+        img.style.left = e.pageX + "px";
+        img.style.top = e.pageY + "px";
+        card.appendChild(img);
+        if (soundOn) popSound.play();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+
+</body>
+</html>
